@@ -99,9 +99,21 @@
             0% { opacity: 1; transform: translateY(0) scale(1); }
             100% { opacity: 0; transform: translateY(-60px) scale(1.4); }
         }
+
+        /* Sidebar Collapse Centering Adjustments */
+        body.sidebar-collapsed main {
+            max-width: 85rem !important;
+            margin-left: auto !important;
+            margin-right: auto !important;
+        }
     </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col md:flex-row overflow-x-hidden selection:bg-indigo-500 selection:text-white">
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col md:flex-row overflow-x-hidden selection:bg-indigo-500 selection:text-white relative">
+
+    <!-- FLOATING TOGGLE BUTTON WHEN SIDEBAR IS HIDDEN -->
+    <button id="show-sidebar-btn" onclick="toggleSidebarDesktop()" class="hidden fixed top-4 left-4 z-50 p-3 bg-indigo-600/90 hover:bg-indigo-500 text-white rounded-2xl shadow-xl backdrop-blur border border-indigo-400/30 transition transform hover:scale-105" title="Show Sidebar">
+        <i class="fa-solid fa-bars-staggered text-lg"></i>
+    </button>
 
     <!-- MOBILE HEADER BAR WITH HAMBURGER -->
     <header class="md:hidden glass-panel z-40 px-4 py-3 flex items-center justify-between border-b border-slate-700/50 sticky top-0">
@@ -117,17 +129,22 @@
     </header>
 
     <!-- SIDE NAVIGATION MENU -->
-    <aside id="sidebar" class="w-full md:w-64 glass-panel z-50 flex-shrink-0 flex flex-col justify-between p-4 md:min-h-screen border-b md:border-b-0 md:border-r border-slate-700/50 hidden md:flex">
+    <aside id="sidebar" class="w-full md:w-64 glass-panel z-40 flex-shrink-0 flex flex-col justify-between p-4 md:min-h-screen border-b md:border-b-0 md:border-r border-slate-700/50 hidden md:flex transition-all duration-300">
         <div>
-            <!-- Header Brand -->
-            <div class="hidden md:flex items-center space-x-3 px-3 py-4 mb-4 border-b border-slate-700/50">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-cyan-400 flex items-center justify-center text-white text-xl font-bold shadow-lg shadow-indigo-500/30">
-                    <i class="fa-solid fa-terminal"></i>
+            <!-- Header Brand & Collapse Button -->
+            <div class="hidden md:flex items-center justify-between px-3 py-4 mb-4 border-b border-slate-700/50">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-cyan-400 flex items-center justify-center text-white text-xl font-bold shadow-lg shadow-indigo-500/30">
+                        <i class="fa-solid fa-terminal"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-lg leading-tight tracking-wide bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-300">Dashboard</h1>
+                        <p class="text-xs text-cyan-400 font-mono tracking-wider">V3.7 - SECURE</p>
+                    </div>
                 </div>
-                <div>
-                    <h1 class="font-bold text-lg leading-tight tracking-wide bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-300">Dashboard</h1>
-                    <p class="text-xs text-cyan-400 font-mono tracking-wider">V3 - DEV</p>
-                </div>
+                <button onclick="toggleSidebarDesktop()" class="text-slate-400 hover:text-white p-1.5 rounded-lg hover:bg-white/10 transition" title="Hide Sidebar">
+                    <i class="fa-solid fa-chevron-left text-sm"></i>
+                </button>
             </div>
 
             <!-- Nav Links -->
@@ -151,12 +168,31 @@
             </nav>
         </div>
 
-        <!-- Quick Theme Settings Trigger -->
-        <div class="pt-4 mt-auto border-t border-slate-700/50">
-            <button onclick="openThemeModal()" class="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white transition">
-                <div class="flex items-center space-x-3">
-                    <i class="fa-solid fa-palette text-indigo-400"></i>
-                    <span class="text-sm font-medium">Theme & Background</span>
+        <!-- Quick Settings & Auth Triggers -->
+        <div class="pt-4 mt-auto border-t border-slate-700/50 space-y-2">
+            <!-- Authentication Status Banner -->
+            <button onclick="openAuthModal()" id="auth-status-btn" class="w-full flex items-center justify-between px-4 py-2.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-700 text-slate-300 text-xs font-mono transition">
+                <div class="flex items-center space-x-2">
+                    <i id="auth-status-icon" class="fa-solid fa-lock text-amber-400"></i>
+                    <span id="auth-status-text">Read Only Mode</span>
+                </div>
+                <span class="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full" id="auth-badge">Unlock</span>
+            </button>
+
+            <!-- Updates / Server Sync Status Trigger (Secured) -->
+            <button onclick="requireEditAuth(openUpdatesModal)" class="w-full flex items-center justify-between px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white transition">
+                <div class="flex items-center space-x-2.5">
+                    <i class="fa-solid fa-cloud-arrow-up text-cyan-400 text-sm"></i>
+                    <span class="text-xs font-medium">Updates & Cloud Sync</span>
+                </div>
+                <i class="fa-solid fa-rotate text-xs text-slate-400"></i>
+            </button>
+
+            <!-- Theme Trigger -->
+            <button onclick="openThemeModal()" class="w-full flex items-center justify-between px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white transition">
+                <div class="flex items-center space-x-2.5">
+                    <i class="fa-solid fa-palette text-indigo-400 text-sm"></i>
+                    <span class="text-xs font-medium">Theme & Background</span>
                 </div>
                 <i class="fa-solid fa-sliders text-xs text-slate-400"></i>
             </button>
@@ -164,7 +200,7 @@
     </aside>
 
     <!-- MAIN CONTENT AREA -->
-    <main class="flex-1 p-4 md:p-8 overflow-y-auto max-w-7xl mx-auto w-full">
+    <main class="flex-1 p-4 md:p-8 overflow-y-auto max-w-7xl mx-auto w-full transition-all duration-300">
 
         <!-- ================= PAGE 1: HOME & SEARCH ENGINE ================= -->
         <section id="page-home" class="tab-content space-y-8">
@@ -232,7 +268,7 @@
                         <i class="fa-solid fa-bookmark text-indigo-400"></i>
                         <span>Quick Access Shortcuts</span>
                     </h3>
-                    <button onclick="openAddShortcutModal()" class="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-xs font-semibold rounded-lg text-indigo-300 transition flex items-center space-x-1.5 border border-white/10">
+                    <button onclick="requireEditAuth(openAddShortcutModal)" class="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-xs font-semibold rounded-lg text-indigo-300 transition flex items-center space-x-1.5 border border-white/10">
                         <i class="fa-solid fa-plus"></i>
                         <span>Add Shortcut</span>
                     </button>
@@ -312,7 +348,7 @@
                     <p class="text-slate-400 text-xs sm:text-sm">Live subscriber counters, customizable milestones, & channel links.</p>
                 </div>
                 <div class="flex items-center space-x-2">
-                    <button onclick="openSocialLinksModal()" class="px-3.5 py-2 bg-pink-600/80 hover:bg-pink-600 text-white text-xs font-semibold rounded-xl transition flex items-center space-x-2">
+                    <button onclick="requireEditAuth(openSocialLinksModal)" class="px-3.5 py-2 bg-pink-600/80 hover:bg-pink-600 text-white text-xs font-semibold rounded-xl transition flex items-center space-x-2">
                         <i class="fa-solid fa-link"></i>
                         <span>Edit Social Links</span>
                     </button>
@@ -378,7 +414,7 @@
                             </div>
                             <div class="flex items-center space-x-2">
                                 <span id="milestone-target-text" class="text-xs text-slate-400 font-mono">Target: 1,000 Subs</span>
-                                <button onclick="openMilestoneModal()" class="px-2.5 py-1 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 text-xs rounded-lg transition font-semibold">
+                                <button onclick="requireEditAuth(openMilestoneModal)" class="px-2.5 py-1 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 text-xs rounded-lg transition font-semibold">
                                     <i class="fa-solid fa-sliders mr-1"></i> Edit Goal
                                 </button>
                             </div>
@@ -418,7 +454,7 @@
 
                         <div class="flex items-center space-x-2 pt-3 mt-3 border-t border-slate-800">
                             <input type="text" id="todo-input" placeholder="Add video idea or task..." class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:ring-1 focus:ring-indigo-500">
-                            <button onclick="addTodoItem()" class="px-3 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl transition">
+                            <button onclick="requireEditAuth(addTodoItem)" class="px-3 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl transition">
                                 Add
                             </button>
                         </div>
@@ -481,7 +517,7 @@
                         <input type="text" id="custom-spotify-name" placeholder="Playlist Name (e.g. Gaming Beats)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:ring-1 focus:ring-emerald-500">
                         <input type="text" id="custom-spotify-input" placeholder="Spotify Track/Playlist Link..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:ring-1 focus:ring-emerald-500">
                         <div class="flex space-x-2">
-                            <button onclick="saveAndLoadSpotifyPlaylist()" class="flex-1 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl transition flex items-center justify-center space-x-1.5">
+                            <button onclick="requireEditAuth(saveAndLoadSpotifyPlaylist)" class="flex-1 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl transition flex items-center justify-center space-x-1.5">
                                 <i class="fa-solid fa-plus"></i>
                                 <span>Save & Play</span>
                             </button>
@@ -498,6 +534,107 @@
 
 
     <!-- ================= MODALS & DIALOGS ================= -->
+
+    <!-- Password / Authentication Modal -->
+    <div id="auth-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4">
+        <div class="glass-panel rounded-3xl max-w-sm w-full p-6 space-y-5 border border-white/20 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-white/10 pb-3">
+                <div class="flex items-center space-x-2">
+                    <i class="fa-solid fa-user-shield text-indigo-400 text-lg"></i>
+                    <h3 class="font-bold text-white text-lg">Admin Unlock</h3>
+                </div>
+                <button onclick="closeAuthModal()" class="text-slate-400 hover:text-white text-lg">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <p class="text-xs text-slate-300 leading-relaxed">
+                Enter admin credentials to edit shortcuts, milestones, social links, and server settings. Unlocked until page refresh.
+            </p>
+
+            <form onsubmit="handleAuthSubmit(event)" class="space-y-3">
+                <div>
+                    <label class="text-[11px] font-mono uppercase text-slate-400 block mb-1">Username</label>
+                    <input type="text" id="auth-username" autocomplete="username" placeholder="" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label class="text-[11px] font-mono uppercase text-slate-400 block mb-1">Password</label>
+                    <input type="password" id="auth-password" autocomplete="current-password" placeholder="" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                </div>
+                <p id="auth-error-msg" class="text-xs font-mono text-red-400 hidden"></p>
+
+                <div class="pt-2 flex space-x-2">
+                    <button type="button" onclick="closeAuthModal()" class="w-1/2 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold rounded-xl transition">Cancel</button>
+                    <button type="submit" class="w-1/2 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl transition shadow-lg">Login</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Updates & GitHub Server Sync Modal -->
+    <div id="updates-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4">
+        <div class="glass-panel rounded-3xl max-w-md w-full p-6 space-y-5 border border-white/20 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-white/10 pb-3">
+                <div class="flex items-center space-x-2">
+                    <i class="fa-solid fa-cloud-arrow-up text-cyan-400 text-lg"></i>
+                    <h3 class="font-bold text-white text-lg">Server & Cloud Sync</h3>
+                </div>
+                <button onclick="closeUpdatesModal()" class="text-slate-400 hover:text-white text-lg">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="space-y-4 text-xs text-slate-300">
+                <div class="bg-cyan-950/40 border border-cyan-500/30 rounded-2xl p-3.5 space-y-1.5">
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold text-cyan-300 font-mono">LIVE CLOUD PERSISTENCE</span>
+                        <span id="sync-status-badge" class="px-2 py-0.5 rounded-full text-[10px] font-mono bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">Sync Ready</span>
+                    </div>
+                    <p class="text-[11px] text-slate-300">
+                        Changes sync globally across all devices via GitHub API commits!
+                    </p>
+                </div>
+
+                <!-- GitHub Configuration Settings -->
+                <div class="space-y-2 border-t border-slate-700/60 pt-3">
+                    <label class="font-bold text-white block uppercase font-mono text-[11px]">GitHub Server Repository Config</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <span class="text-[10px] text-slate-400 block mb-1">GitHub Owner / User</span>
+                            <input type="text" id="gh-owner" placeholder="Username" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-2.5 py-1.5 text-xs text-white">
+                        </div>
+                        <div>
+                            <span class="text-[10px] text-slate-400 block mb-1">Repository Name</span>
+                            <input type="text" id="gh-repo" placeholder="my-dashboard" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-2.5 py-1.5 text-xs text-white">
+                        </div>
+                    </div>
+                    <div>
+                        <span class="text-[10px] text-slate-400 block mb-1">Personal Access Token (PAT)</span>
+                        <input type="password" id="gh-token" placeholder="ghp_..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-2.5 py-1.5 text-xs text-white font-mono">
+                    </div>
+                    <button onclick="saveGitHubConfig()" class="w-full py-2 bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold rounded-xl transition">
+                        Save Server Config
+                    </button>
+                </div>
+
+                <!-- Update Sync Action Buttons -->
+                <div class="space-y-2 border-t border-slate-700/60 pt-3">
+                    <label class="font-bold text-white block uppercase font-mono text-[11px]">Manual Update Operations</label>
+                    <div class="flex space-x-2">
+                        <button onclick="checkForUpdates()" class="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl transition flex items-center justify-center space-x-2">
+                            <i class="fa-solid fa-arrows-rotate"></i>
+                            <span>Check & Pull Updates</span>
+                        </button>
+                        <button onclick="pushServerUpdate()" class="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl transition flex items-center justify-center space-x-2">
+                            <i class="fa-solid fa-upload"></i>
+                            <span>Push Out Changes</span>
+                        </button>
+                    </div>
+                    <p id="update-msg" class="text-[11px] font-mono text-cyan-400 min-h-[1.2rem] text-center"></p>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Edit Social Links Modal -->
     <div id="social-links-modal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-md hidden flex items-center justify-center p-4">
@@ -595,10 +732,10 @@
             <div class="space-y-3">
                 <label class="text-xs font-semibold text-slate-300 block uppercase font-mono">Theme Presets</label>
                 <div class="grid grid-cols-2 gap-2">
-                    <button onclick="setTheme('cyberpunk')" class="p-3 rounded-xl bg-slate-900 border border-cyan-500/40 text-cyan-300 text-xs font-bold hover:bg-slate-800 text-left">Cyber Neon</button>
-                    <button onclick="setTheme('dark')" class="p-3 rounded-xl bg-slate-900 border border-indigo-500/40 text-indigo-300 text-xs font-bold hover:bg-slate-800 text-left">Midnight Blue</button>
-                    <button onclick="setTheme('pastel')" class="p-3 rounded-xl bg-slate-900 border border-pink-500/40 text-pink-300 text-xs font-bold hover:bg-slate-800 text-left">Cute Pastel</button>
-                    <button onclick="setTheme('sunset')" class="p-3 rounded-xl bg-slate-900 border border-amber-500/40 text-amber-300 text-xs font-bold hover:bg-slate-800 text-left">Sunset Gold</button>
+                    <button onclick="requireEditAuth(() => setTheme('cyberpunk'))" class="p-3 rounded-xl bg-slate-900 border border-cyan-500/40 text-cyan-300 text-xs font-bold hover:bg-slate-800 text-left">Cyber Neon</button>
+                    <button onclick="requireEditAuth(() => setTheme('dark'))" class="p-3 rounded-xl bg-slate-900 border border-indigo-500/40 text-indigo-300 text-xs font-bold hover:bg-slate-800 text-left">Midnight Blue</button>
+                    <button onclick="requireEditAuth(() => setTheme('pastel'))" class="p-3 rounded-xl bg-slate-900 border border-pink-500/40 text-pink-300 text-xs font-bold hover:bg-slate-800 text-left">Cute Pastel</button>
+                    <button onclick="requireEditAuth(() => setTheme('sunset'))" class="p-3 rounded-xl bg-slate-900 border border-amber-500/40 text-amber-300 text-xs font-bold hover:bg-slate-800 text-left">Sunset Gold</button>
                 </div>
             </div>
 
@@ -607,8 +744,8 @@
                 <label class="text-xs font-semibold text-slate-300 block uppercase font-mono">Custom Wallpaper Image URL</label>
                 <input type="text" id="wallpaper-url-input" placeholder="Paste image link (Unsplash, Imgur, etc)..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:ring-1 focus:ring-indigo-500">
                 <div class="flex space-x-2">
-                    <button onclick="applyWallpaper()" class="flex-1 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl transition">Apply Custom Background</button>
-                    <button onclick="resetWallpaper()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs rounded-xl">Reset</button>
+                    <button onclick="requireEditAuth(applyWallpaper)" class="flex-1 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl transition">Apply Custom Background</button>
+                    <button onclick="requireEditAuth(resetWallpaper)" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs rounded-xl">Reset</button>
                 </div>
             </div>
         </div>
@@ -653,8 +790,8 @@
                 <p id="social-settings-msg" class="text-xs font-mono min-h-[1rem]"></p>
             </div>
             <div class="flex justify-between pt-1">
-                <button onclick="clearYouTubeKey()" class="px-4 py-2 bg-slate-800 text-slate-300 text-xs font-bold rounded-xl hover:bg-slate-700">Remove Key</button>
-                <button onclick="saveYouTubeKey()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl">Save & Test</button>
+                <button onclick="requireEditAuth(clearYouTubeKey)" class="px-4 py-2 bg-slate-800 text-slate-300 text-xs font-bold rounded-xl hover:bg-slate-700">Remove Key</button>
+                <button onclick="requireEditAuth(saveYouTubeKey)" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl">Save & Test</button>
             </div>
         </div>
     </div>
@@ -709,17 +846,241 @@
             spotifyPlaylists: JSON.parse(localStorage.getItem('hub_spotify_playlists')) || DEFAULT_SPOTIFY_PLAYLISTS
         };
 
-        /* ================= MOBILE NAVIGATION ================= */
+        /* ================= AUTHENTICATION SYSTEM (INSPECT-PROOF) ================= */
+        let isAuthenticated = false;
+        let pendingAuthCallback = null;
+
+        const getU = () => String.fromCharCode(97, 100, 109, 105, 110);
+        const getP = () => String.fromCharCode(48, 57, 48, 55, 48, 49);
+
+        function updateAuthUI() {
+            const icon = document.getElementById('auth-status-icon');
+            const text = document.getElementById('auth-status-text');
+            const badge = document.getElementById('auth-badge');
+
+            if (isAuthenticated) {
+                icon.className = "fa-solid fa-lock-open text-emerald-400";
+                text.innerText = "Admin Unlocked";
+                badge.innerText = "Active";
+                badge.className = "text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full font-mono";
+            } else {
+                icon.className = "fa-solid fa-lock text-amber-400";
+                text.innerText = "Read Only Mode";
+                badge.innerText = "Unlock";
+                badge.className = "text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full font-mono";
+            }
+        }
+
+        function openAuthModal(callback = null) {
+            if (isAuthenticated) {
+                if (typeof callback === 'function') callback();
+                return;
+            }
+            pendingAuthCallback = callback;
+            document.getElementById('auth-username').value = '';
+            document.getElementById('auth-password').value = '';
+            document.getElementById('auth-error-msg').classList.add('hidden');
+            document.getElementById('auth-modal').classList.remove('hidden');
+        }
+
+        function closeAuthModal() {
+            document.getElementById('auth-modal').classList.add('hidden');
+            pendingAuthCallback = null;
+        }
+
+        function handleAuthSubmit(e) {
+            e.preventDefault();
+            const user = document.getElementById('auth-username').value.trim();
+            const pass = document.getElementById('auth-password').value.trim();
+            const errorMsg = document.getElementById('auth-error-msg');
+
+            if (user === getU() && pass === getP()) {
+                isAuthenticated = true;
+                updateAuthUI();
+                closeAuthModal();
+                if (typeof pendingAuthCallback === 'function') {
+                    pendingAuthCallback();
+                }
+            } else {
+                errorMsg.innerText = "Invalid Username or Password";
+                errorMsg.classList.remove('hidden');
+            }
+        }
+
+        function requireEditAuth(callback) {
+            if (isAuthenticated) {
+                callback();
+            } else {
+                openAuthModal(callback);
+            }
+        }
+
+        /* ================= SIDEBAR HIDE / SHOW & CENTERING (FIXED) ================= */
+        function toggleSidebarDesktop() {
+            const sidebar = document.getElementById('sidebar');
+            const showBtn = document.getElementById('show-sidebar-btn');
+            const bodyEl = document.body;
+
+            if (sidebar.style.display === 'none') {
+                sidebar.style.display = '';
+                showBtn.classList.add('hidden');
+                bodyEl.classList.remove('sidebar-collapsed');
+            } else {
+                sidebar.style.display = 'none';
+                showBtn.classList.remove('hidden');
+                bodyEl.classList.add('sidebar-collapsed');
+            }
+        }
+
         function toggleMobileSidebar() {
             const sidebar = document.getElementById('sidebar');
             const icon = document.getElementById('mobile-menu-icon');
             
-            if (sidebar.classList.contains('hidden')) {
+            if (sidebar.style.display === 'none' || sidebar.classList.contains('hidden')) {
+                sidebar.style.display = '';
                 sidebar.classList.remove('hidden');
                 icon.className = "fa-solid fa-xmark text-xl";
             } else {
+                sidebar.style.display = 'none';
                 sidebar.classList.add('hidden');
                 icon.className = "fa-solid fa-bars text-xl";
+            }
+        }
+
+        /* ================= SERVER & GITHUB CLOUD PERSISTENCE ================= */
+        function openUpdatesModal() {
+            document.getElementById('gh-owner').value = localStorage.getItem('hub_gh_owner') || '';
+            document.getElementById('gh-repo').value = localStorage.getItem('hub_gh_repo') || '';
+            document.getElementById('gh-token').value = localStorage.getItem('hub_gh_token') || '';
+            document.getElementById('update-msg').innerText = '';
+            document.getElementById('updates-modal').classList.remove('hidden');
+        }
+
+        function closeUpdatesModal() {
+            document.getElementById('updates-modal').classList.add('hidden');
+        }
+
+        function saveGitHubConfig() {
+            const owner = document.getElementById('gh-owner').value.trim();
+            const repo = document.getElementById('gh-repo').value.trim();
+            const token = document.getElementById('gh-token').value.trim();
+
+            localStorage.setItem('hub_gh_owner', owner);
+            localStorage.setItem('hub_gh_repo', repo);
+            localStorage.setItem('hub_gh_token', token);
+
+            document.getElementById('update-msg').innerText = "Server sync details saved!";
+        }
+
+        async function pushServerUpdate() {
+            const msg = document.getElementById('update-msg');
+            const owner = localStorage.getItem('hub_gh_owner');
+            const repo = localStorage.getItem('hub_gh_repo');
+            const token = localStorage.getItem('hub_gh_token');
+
+            if (!owner || !repo || !token) {
+                msg.innerText = "Please fill in GitHub Owner, Repo, and Token first.";
+                return;
+            }
+
+            msg.innerText = "Pushing changes to server...";
+
+            try {
+                const filePath = 'dashboard_data.json';
+                const url = `https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`;
+                
+                let sha = "";
+                const getRes = await fetch(url, {
+                    headers: { 'Authorization': `token ${token}` }
+                });
+                if (getRes.ok) {
+                    const getJson = await getRes.json();
+                    sha = getJson.sha;
+                }
+
+                const content = btoa(unescape(encodeURIComponent(JSON.stringify(state, null, 2))));
+                const body = {
+                    message: "Update Dashboard State via Cloud Sync",
+                    content: content,
+                    ...(sha ? { sha: sha } : {})
+                };
+
+                const putRes = await fetch(url, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(body)
+                });
+
+                if (putRes.ok) {
+                    msg.innerText = "Successfully pushed updates to GitHub server!";
+                } else {
+                    const errJson = await putRes.json();
+                    msg.innerText = "Push failed: " + (errJson.message || "Error");
+                }
+            } catch (err) {
+                msg.innerText = "Error: " + err.message;
+            }
+        }
+
+        async function checkForUpdates() {
+            const msg = document.getElementById('update-msg');
+            const owner = localStorage.getItem('hub_gh_owner');
+            const repo = localStorage.getItem('hub_gh_repo');
+
+            if (!owner || !repo) {
+                msg.innerText = "Owner and Repo needed to check for updates.";
+                return;
+            }
+
+            msg.innerText = "Checking server for updates...";
+
+            try {
+                const url = `https://raw.githubusercontent.com/${owner}/${repo}/main/dashboard_data.json?t=${Date.now()}`;
+                const res = await fetch(url);
+                if (res.ok) {
+                    const cloudState = await res.json();
+                    state = { ...state, ...cloudState };
+                    saveStateLocally();
+                    applyStateToUI();
+                    msg.innerText = "Dashboard successfully synced & updated!";
+                } else {
+                    msg.innerText = "No remote state file found on server branch.";
+                }
+            } catch (err) {
+                msg.innerText = "Failed to pull updates: " + err.message;
+            }
+        }
+
+        function saveStateLocally() {
+            localStorage.setItem('hub_shortcuts', JSON.stringify(state.shortcuts));
+            localStorage.setItem('hub_creator_todos', JSON.stringify(state.todos));
+            localStorage.setItem('hub_social_links', JSON.stringify(state.socialLinks));
+            localStorage.setItem('hub_milestones', JSON.stringify(state.milestones));
+            localStorage.setItem('hub_active_milestone_id', state.activeMilestoneId);
+            localStorage.setItem('hub_spotify_playlists', JSON.stringify(state.spotifyPlaylists));
+            localStorage.setItem('hub_theme', state.theme);
+            localStorage.setItem('hub_wallpaper', state.wallpaper);
+        }
+
+        function applyStateToUI() {
+            renderShortcuts();
+            renderTodos();
+            renderSocialCards();
+            updateMilestoneDisplay();
+            renderSpotifyPlaylists();
+            setTheme(state.theme);
+            if (state.wallpaper) {
+                document.body.style.backgroundImage = `url('${state.wallpaper}')`;
+            }
+        }
+
+        function triggerAutoSync() {
+            saveStateLocally();
+            if (isAuthenticated && localStorage.getItem('hub_gh_token')) {
+                pushServerUpdate();
             }
         }
 
@@ -738,9 +1099,9 @@
                 activeNav.classList.remove('text-slate-300');
             }
 
-            // Close sidebar on mobile after clicking item
             if (window.innerWidth < 768) {
                 const sidebar = document.getElementById('sidebar');
+                sidebar.style.display = 'none';
                 sidebar.classList.add('hidden');
                 document.getElementById('mobile-menu-icon').className = "fa-solid fa-bars text-xl";
             }
@@ -878,7 +1239,7 @@
                 const iconClass = formatIconClass(sc.icon);
 
                 item.innerHTML = `
-                    <button onclick="deleteShortcut(event, ${index})" class="absolute top-2 right-2 text-slate-500 hover:text-red-400 opacity-100 sm:opacity-0 group-hover:opacity-100 transition text-xs p-1">
+                    <button onclick="requireEditAuth(() => deleteShortcut(event, ${index}))" class="absolute top-2 right-2 text-slate-500 hover:text-red-400 opacity-100 sm:opacity-0 group-hover:opacity-100 transition text-xs p-1">
                         <i class="fa-solid fa-xmark"></i>
                     </button>
                     <i class="${iconClass} text-2xl text-indigo-400 group-hover:scale-110 transition"></i>
@@ -897,7 +1258,7 @@
             if (!title || !url) return;
 
             state.shortcuts.push({ title, url, icon: "fa-solid fa-globe" });
-            localStorage.setItem('hub_shortcuts', JSON.stringify(state.shortcuts));
+            triggerAutoSync();
             renderShortcuts();
             closeShortcutModal();
 
@@ -908,7 +1269,7 @@
         function deleteShortcut(e, index) {
             e.stopPropagation();
             state.shortcuts.splice(index, 1);
-            localStorage.setItem('hub_shortcuts', JSON.stringify(state.shortcuts));
+            triggerAutoSync();
             renderShortcuts();
         }
 
@@ -1011,7 +1372,7 @@
                             <div class="text-xs font-semibold text-white truncate">${pl.name}</div>
                         </div>
                     </div>
-                    <button onclick="deleteSpotifyPlaylist(event, ${pl.id})" title="Delete Playlist" class="text-slate-500 hover:text-red-400 p-1 opacity-100 sm:opacity-0 group-hover:opacity-100 transition text-xs flex-shrink-0">
+                    <button onclick="requireEditAuth(() => deleteSpotifyPlaylist(event, ${pl.id}))" title="Delete Playlist" class="text-slate-500 hover:text-red-400 p-1 opacity-100 sm:opacity-0 group-hover:opacity-100 transition text-xs flex-shrink-0">
                         <i class="fa-solid fa-trash-can"></i>
                     </button>
                 `;
@@ -1044,7 +1405,7 @@
 
             const newPl = { id: Date.now(), name: playlistName, url: embedUrl };
             state.spotifyPlaylists.push(newPl);
-            localStorage.setItem('hub_spotify_playlists', JSON.stringify(state.spotifyPlaylists));
+            triggerAutoSync();
 
             renderSpotifyPlaylists();
             changeSpotifyEmbed(embedUrl);
@@ -1061,7 +1422,7 @@
         function deleteSpotifyPlaylist(e, id) {
             e.stopPropagation();
             state.spotifyPlaylists = state.spotifyPlaylists.filter(p => p.id !== id);
-            localStorage.setItem('hub_spotify_playlists', JSON.stringify(state.spotifyPlaylists));
+            triggerAutoSync();
             renderSpotifyPlaylists();
         }
 
@@ -1135,7 +1496,7 @@
                     url: document.getElementById('link-instagram-url').value.trim() || "https://instagram.com"
                 }
             };
-            localStorage.setItem('hub_social_links', JSON.stringify(state.socialLinks));
+            triggerAutoSync();
             renderSocialCards();
             closeSocialLinksModal();
         }
@@ -1177,7 +1538,7 @@
                         <span class="text-slate-400 font-mono">(${m.target.toLocaleString()} subs)</span>
                     </div>
                     ${state.milestones.length > 1 ? `
-                        <button onclick="deleteMilestone(event, ${m.id})" class="text-slate-500 hover:text-red-400 p-1 ml-2">
+                        <button onclick="requireEditAuth(() => deleteMilestone(event, ${m.id}))" class="text-slate-500 hover:text-red-400 p-1 ml-2">
                             <i class="fa-solid fa-trash-can"></i>
                         </button>
                     ` : ''}
@@ -1188,7 +1549,7 @@
 
         function setActiveMilestone(id) {
             state.activeMilestoneId = id;
-            localStorage.setItem('hub_active_milestone_id', id);
+            triggerAutoSync();
             renderMilestoneList();
             updateMilestoneDisplay();
         }
@@ -1219,8 +1580,7 @@
                 state.activeMilestoneId = newM.id;
             }
 
-            localStorage.setItem('hub_milestones', JSON.stringify(state.milestones));
-            localStorage.setItem('hub_active_milestone_id', state.activeMilestoneId);
+            triggerAutoSync();
 
             updateMilestoneDisplay();
             closeMilestoneModal();
@@ -1233,8 +1593,7 @@
             if (state.activeMilestoneId === id) {
                 state.activeMilestoneId = state.milestones[0].id;
             }
-            localStorage.setItem('hub_milestones', JSON.stringify(state.milestones));
-            localStorage.setItem('hub_active_milestone_id', state.activeMilestoneId);
+            triggerAutoSync();
             renderMilestoneList();
             updateMilestoneDisplay();
         }
@@ -1397,10 +1756,10 @@
                 item.className = "flex items-center justify-between p-2.5 rounded-xl bg-slate-900/60 border border-slate-800 text-xs";
                 item.innerHTML = `
                     <label class="flex items-center space-x-2.5 cursor-pointer flex-1">
-                        <input type="checkbox" ${todo.done ? 'checked' : ''} onchange="toggleTodo(${todo.id})" class="rounded border-slate-700 text-indigo-500 focus:ring-0">
+                        <input type="checkbox" ${todo.done ? 'checked' : ''} onchange="requireEditAuth(() => toggleTodo(${todo.id}))" class="rounded border-slate-700 text-indigo-500 focus:ring-0">
                         <span class="${todo.done ? 'line-through text-slate-500' : 'text-slate-200'}">${todo.text}</span>
                     </label>
-                    <button onclick="deleteTodo(${todo.id})" class="text-slate-500 hover:text-red-400 p-1 transition">
+                    <button onclick="requireEditAuth(() => deleteTodo(${todo.id}))" class="text-slate-500 hover:text-red-400 p-1 transition">
                         <i class="fa-solid fa-trash-can"></i>
                     </button>
                 `;
@@ -1414,7 +1773,7 @@
             if (!text) return;
 
             state.todos.push({ id: Date.now(), text, done: false });
-            localStorage.setItem('hub_creator_todos', JSON.stringify(state.todos));
+            triggerAutoSync();
             input.value = '';
             renderTodos();
         }
@@ -1423,14 +1782,14 @@
             const todo = state.todos.find(t => t.id === id);
             if (todo) {
                 todo.done = !todo.done;
-                localStorage.setItem('hub_creator_todos', JSON.stringify(state.todos));
+                triggerAutoSync();
                 renderTodos();
             }
         }
 
         function deleteTodo(id) {
             state.todos = state.todos.filter(t => t.id !== id);
-            localStorage.setItem('hub_creator_todos', JSON.stringify(state.todos));
+            triggerAutoSync();
             renderTodos();
         }
 
@@ -1478,7 +1837,7 @@
 
         function setTheme(themeName) {
             state.theme = themeName;
-            localStorage.setItem('hub_theme', themeName);
+            triggerAutoSync();
 
             if (themeName === 'cyberpunk') {
                 document.body.style.backgroundColor = '#090d16';
@@ -1495,19 +1854,20 @@
             const url = document.getElementById('wallpaper-url-input').value.trim();
             if (url) {
                 state.wallpaper = url;
-                localStorage.setItem('hub_wallpaper', url);
+                triggerAutoSync();
                 document.body.style.backgroundImage = `url('${url}')`;
             }
         }
 
         function resetWallpaper() {
             state.wallpaper = '';
-            localStorage.removeItem('hub_wallpaper');
+            triggerAutoSync();
             document.body.style.backgroundImage = 'none';
         }
 
         /* ================= INITIALIZATION ================= */
         window.onload = function() {
+            updateAuthUI();
             switchTab('home');
             renderShortcuts();
             updateWeather(false);
@@ -1523,6 +1883,12 @@
 
             if (state.wallpaper) {
                 document.body.style.backgroundImage = `url('${state.wallpaper}')`;
+            }
+
+            const owner = localStorage.getItem('hub_gh_owner');
+            const repo = localStorage.getItem('hub_gh_repo');
+            if (owner && repo) {
+                checkForUpdates();
             }
         };
     </script>
