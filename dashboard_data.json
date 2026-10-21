@@ -1,0 +1,74 @@
+{
+  "searchProvider": "bing",
+  "shortcuts": [
+    {
+      "title": "YouTube",
+      "url": "https://youtube.com",
+      "icon": "fa-brands fa-youtube"
+    },
+    {
+      "title": "TikTok",
+      "url": "https://tiktok.com",
+      "icon": "fa-brands fa-tiktok"
+    },
+    {
+      "title": "Spotify",
+      "url": "https://open.spotify.com",
+      "icon": "fa-brands fa-spotify"
+    },
+    {
+      "title": "Discord",
+      "url": "https://discord.com",
+      "icon": "fa-brands fa-discord"
+    },
+    {
+      "title": "GitHub",
+      "url": "https://github.com",
+      "icon": "fa-brands fa-github"
+    },
+    {
+      "title": "Reddit",
+      "url": "https://reddit.com",
+      "icon": "fa-brands fa-reddit"
+    }
+  ],
+  "todos": [],
+  "clickerTotal": 0,
+  "clickerPeak": 0,
+  "theme": "cyberpunk",
+  "wallpaper": "https://wallpapercave.com/wp/wp9154891.jpg",
+  "socialLinks": {
+    "tiktok": {
+      "handle": "@The_Goofy_Shiba",
+      "url": "https://tiktok.com/@noah_and_buzz"
+    },
+    "twitch": {
+      "handle": "Live Stream",
+      "url": "https://twitch.tv"
+    },
+    "instagram": {
+      "handle": "Photos & Reels",
+      "url": "https://instagram.com"
+    }
+  },
+  "milestones": [
+    {
+      "id": 2,
+      "title": "2K Milestone Goal",
+      "target": 2000
+    },
+    {
+      "id": 3,
+      "title": "10K Creator Goal",
+      "target": 10000
+    }
+  ],
+  "activeMilestoneId": 2,
+  "spotifyPlaylists": [
+    {
+      "id": 1,
+      "name": "Today's Top Hits",
+      "url": "https://open.spotify.com/embed/playlist/37i9dQZF1DXcBWIGoYBM5M?utm_source=generator&theme=0"
+    }
+  ]
+}
